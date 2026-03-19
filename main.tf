@@ -37,16 +37,16 @@ resource "azurerm_linux_web_app" "app" {
   location            = azurerm_resource_group.rg.location
   service_plan_id     = azurerm_service_plan.plan.id
 
-  site_config {
-    # CRITICAL: This MUST be inside site_config for Free Tier
+site_config {
+    # 1. Must be inside site_config
+    # 2. Must be lowercase 'true'
     use_32_bit_worker_process = true
 
     application_stack {
-      # We use PHP 8.2 as a simple engine to serve your index.html
       php_version = "8.2"
     }
   }
-
+} # This brace closes the azurerm_linux_web_app resource
   # Optional: Settings for your app
   app_settings = {
     "APP_ENVIRONMENT" = "Demo"
