@@ -1,4 +1,4 @@
-# 1. Define the Terraform Providers
+# 1. Provider Configuration
 terraform {
   required_providers {
     azurerm = {
@@ -10,50 +10,47 @@ terraform {
 
 provider "azurerm" {
   features {}
-  # Using your specific Subscription ID
   subscription_id = "c63d6c28-5d20-45ab-a3c6-92f75245b6c3"
 }
 
-# 2. Reference or Create the Resource Group
-# Note: Ensure "keyvault-demo" exists or this will create it
+# 2. Resource Group
 resource "azurerm_resource_group" "rg" {
   name     = "keyvault-demo"
-  location = "East US" 
+  location = "East US"
 }
 
-# 3. Create the App Service Plan (Free Tier)
+# 3. Service Plan (Linux F1 Free Tier)
 resource "azurerm_service_plan" "plan" {
   name                = "shopping-cart-free-plan"
   resource_group_name = azurerm_resource_group.rg.name
   location            = azurerm_resource_group.rg.location
   os_type             = "Linux"
-  sku_name            = "F1" # F1 is the Free Tier
+  sku_name            = "F1"
 }
 
-# 4. Create the Web App (The Container for your HTML)
+# 4. Linux Web App
 resource "azurerm_linux_web_app" "app" {
-  name                = "tush-shopping-cart-demo" # Change this if the name is taken
+  name                = "tush-shopping-cart-demo"
   resource_group_name = azurerm_resource_group.rg.name
   location            = azurerm_resource_group.rg.location
   service_plan_id     = azurerm_service_plan.plan.id
 
-site_config {
-    # 1. Must be inside site_config
-    # 2. Must be lowercase 'true'
+  site_config {
+    # If Linux App Service rejects 32-bit, this is the line to remove.
+    # But for F1 tier, it's usually allowed/required.
     use_32_bit_worker_process = true
 
     application_stack {
       php_version = "8.2"
     }
   }
-} # This brace closes the azurerm_linux_web_app resource
-  # Optional: Settings for your app
+
   app_settings = {
     "APP_ENVIRONMENT" = "Demo"
   }
 }
 
-# 5. Output the Web App URL so you can click it
+# 5. Output
 output "webapp_url" {
   value = "https://${azurerm_linux_web_app.app.default_hostname}"
 }
